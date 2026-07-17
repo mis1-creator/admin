@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Love Home — MD Admin Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --crimson:#C8102E; --crimson-dark:#9e0c24;
+  --gold:#B8922A; --gold-light:#d4a843;
+  --ivory:#FAF8F5; --dark:#1A1410; --mid:#4A3F35; --light:#8C7B6E;
+  --border:rgba(184,146,42,0.18); --card-bg:#FFFFFF;
+  --shadow:0 4px 24px rgba(26,20,16,0.09);
+  --s-good:#2e7d32; --s-warn:#e65100; --s-bad:#c8102e;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--ivory);color:var(--dark);min-height:100vh;}
+
+.test-ribbon{background:linear-gradient(90deg,#0f6e56,#085041);color:#fff;text-align:center;
+  font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  padding:7px 16px;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;}
+.test-ribbon .tr-badge{background:rgba(255,255,255,.2);padding:2px 10px;border-radius:10px;font-size:10px;}
+
+.admin-header{background:linear-gradient(135deg,var(--dark) 0%,#2d1f15 100%);
+  padding:0 32px;display:flex;align-items:center;gap:14px;height:64px;
+  position:sticky;top:0;z-index:200;box-shadow:0 2px 24px rgba(0,0,0,.35);}
+.admin-header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--crimson),var(--gold),var(--crimson));}
+.h-logo{height:36px;object-fit:contain;}
+.h-divider{width:1px;height:28px;background:rgba(255,255,255,.12);}
+.h-title{font-family:'Playfair Display',serif;color:#fff;font-size:17px;font-weight:700;line-height:1.15;}
+.h-title small{display:block;font-family:'DM Sans',sans-serif;font-size:10px;font-weight:600;
+  color:var(--gold);letter-spacing:.14em;text-transform:uppercase;}
+.h-spacer{flex:1;}
+.h-badge{background:linear-gradient(135deg,var(--crimson),var(--crimson-dark));color:#fff;
+  font-size:10px;font-weight:700;padding:4px 12px;border-radius:20px;letter-spacing:.1em;
+  text-transform:uppercase;white-space:nowrap;}
+
+.admin-main{max-width:1040px;margin:0 auto;padding:30px 28px 72px;}
+.page-title{font-family:'Playfair Display',serif;font-size:30px;font-weight:700;line-height:1.1;}
+.page-title span{color:var(--crimson);}
+.page-sub{font-size:13px;color:var(--light);margin-top:5px;margin-bottom:24px;}
+
+/* DEPT TABS */
+.dept-tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;margin-bottom:24px;
+  scrollbar-width:thin;}
+.dept-tab{background:var(--card-bg);border:1.5px solid var(--border);border-radius:10px;
+  padding:10px 16px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;
+  color:var(--mid);white-space:nowrap;transition:all .18s;box-shadow:var(--shadow);
+  display:flex;align-items:center;gap:8px;}
+.dept-tab:hover{border-color:var(--gold);color:var(--gold);}
+.dept-tab.active{background:linear-gradient(135deg,var(--crimson),var(--crimson-dark));
+  border-color:var(--crimson);color:#fff;}
+.dept-tab .cnt{background:rgba(0,0,0,.12);border-radius:20px;font-size:10px;padding:1px 7px;font-weight:700;}
+.dept-tab.active .cnt{background:rgba(255,255,255,.25);}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+.stat-card{background:var(--card-bg);border-radius:14px;padding:18px 20px;box-shadow:var(--shadow);
+  border:1px solid var(--border);position:relative;overflow:hidden;}
+.stat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.sc-total::after{background:linear-gradient(90deg,var(--gold),var(--gold-light));}
+.sc-avg::after{background:linear-gradient(90deg,#1565c0,#1e88e5);}
+.sc-top::after{background:linear-gradient(90deg,var(--s-good),#43a047);}
+.sc-attn::after{background:linear-gradient(90deg,var(--crimson),#e53935);}
+.sc-lbl{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--light);margin-bottom:7px;}
+.sc-val{font-family:'Playfair Display',serif;font-size:27px;font-weight:700;line-height:1;}
+.sc-sub{font-size:11.5px;color:var(--light);margin-top:5px;}
+
+.period-note{background:#FFF8E7;border:1px solid rgba(184,146,42,.25);border-radius:10px;
+  padding:10px 16px;font-size:12.5px;color:var(--mid);margin-bottom:20px;display:flex;align-items:center;gap:8px;}
+.period-note strong{color:var(--gold);}
+
+.lb-header-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.lb-title{font-family:'Playfair Display',serif;font-size:19px;font-weight:700;}
+.lb-count{font-size:12px;color:var(--light);}
+
+.leaderboard{display:flex;flex-direction:column;gap:8px;}
+.lb-row{background:var(--card-bg);border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:16px;
+  border:1px solid var(--border);cursor:pointer;box-shadow:0 2px 10px rgba(26,20,16,.06);
+  transition:transform .15s,box-shadow .15s,border-color .15s;}
+.lb-row:hover{transform:translateY(-2px);box-shadow:0 6px 22px rgba(26,20,16,.12);border-color:rgba(184,146,42,.3);}
+.lb-row.lbr-1{border-left:3px solid var(--gold);}
+.lb-row.lbr-2{border-left:3px solid #9e9e9e;}
+.lb-row.lbr-3{border-left:3px solid #8d6e63;}
+.lb-rank{width:28px;text-align:center;flex-shrink:0;font-weight:800;font-size:19px;}
+.lb-av{width:44px;height:44px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;
+  justify-content:center;font-size:14px;font-weight:700;color:#fff;}
+.av-c0{background:linear-gradient(135deg,#C8102E,#9e0c24);}
+.av-c1{background:linear-gradient(135deg,#B8922A,#8a6a1c);}
+.av-c2{background:linear-gradient(135deg,#1565c0,#0d47a1);}
+.av-c3{background:linear-gradient(135deg,#2e7d32,#1b5e20);}
+.av-c4{background:linear-gradient(135deg,#6a1b9a,#4a148c);}
+.lb-info{flex:1;min-width:0;}
+.lb-name{font-weight:700;font-size:14.5px;}
+.lb-meta{font-size:12px;color:var(--light);margin-top:2px;}
+.kra-pills{display:flex;gap:6px;flex-shrink:0;}
+.kra-pill{width:9px;height:9px;border-radius:50%;}
+.pill-good{background:var(--s-good);}.pill-warn{background:var(--s-warn);}.pill-bad{background:var(--s-bad);}
+.lb-score-col{flex:0 0 84px;text-align:right;}
+.lb-score-num{font-family:'Playfair Display',serif;font-size:24px;font-weight:700;line-height:1;}
+.lb-score-lbl{font-size:10px;color:var(--light);margin-top:2px;}
+.sc-good{color:var(--s-good);}.sc-warn{color:var(--s-warn);}.sc-bad{color:var(--s-bad);}
+
+.load-state{text-align:center;padding:56px 20px;color:var(--light);}
+.load-spin{width:32px;height:32px;border-radius:50%;border:3px solid var(--border);
+  border-top-color:var(--gold);margin:0 auto 16px;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+.empty-dept{text-align:center;padding:56px 24px;background:var(--card-bg);border-radius:14px;
+  border:1px dashed var(--border);}
+.empty-dept-ico{font-size:40px;margin-bottom:12px;opacity:.5;}
+.empty-dept-title{font-size:16px;font-weight:700;color:var(--mid);margin-bottom:6px;}
+.empty-dept-text{font-size:13px;color:var(--light);line-height:1.6;}
+
+/* MODAL */
+.modal-backdrop{position:fixed;inset:0;z-index:600;background:rgba(26,20,16,.65);backdrop-filter:blur(6px);
+  display:flex;align-items:center;justify-content:center;padding:20px;
+  opacity:0;pointer-events:none;transition:opacity .22s;}
+.modal-backdrop.open{opacity:1;pointer-events:all;}
+.score-modal{background:var(--card-bg);border-radius:22px;width:100%;max-width:500px;
+  max-height:92vh;overflow-y:auto;box-shadow:0 32px 80px rgba(0,0,0,.32);position:relative;}
+.score-modal::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;
+  background:linear-gradient(90deg,var(--crimson),var(--gold));border-radius:22px 22px 0 0;}
+.modal-x{position:absolute;top:14px;right:14px;background:var(--ivory);border:none;border-radius:50%;
+  width:32px;height:32px;font-size:14px;color:var(--mid);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;z-index:2;}
+
+/* swipe nav arrows */
+.modal-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:2;
+  width:38px;height:38px;border-radius:50%;border:none;cursor:pointer;
+  background:var(--dark);color:#fff;font-size:16px;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 14px rgba(0,0,0,.3);transition:opacity .18s,transform .18s;opacity:.85;}
+.modal-nav:hover{opacity:1;transform:translateY(-50%) scale(1.08);}
+.modal-nav:disabled{opacity:.2;cursor:default;transform:translateY(-50%);}
+.modal-nav.prev{left:-19px;}
+.modal-nav.next{right:-19px;}
+@media(max-width:560px){.modal-nav.prev{left:8px;}.modal-nav.next{right:8px;}}
+
+.modal-head{padding:26px 26px 18px;display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--border);}
+.modal-av{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:16px;font-weight:700;color:#fff;flex-shrink:0;}
+.modal-h-name{font-family:'Playfair Display',serif;font-size:19px;font-weight:700;}
+.modal-h-meta{font-size:11.5px;color:var(--light);margin-top:3px;}
+.modal-total{margin-left:auto;text-align:right;}
+.modal-score-big{font-family:'Playfair Display',serif;font-size:32px;font-weight:700;line-height:1;}
+.modal-score-lbl{font-size:10px;color:var(--light);}
+
+.modal-pager{display:flex;justify-content:center;gap:6px;padding:10px 0 0;}
+.pager-dot{width:7px;height:7px;border-radius:50%;background:var(--border);transition:background .2s,width .2s;}
+.pager-dot.active{background:var(--gold);width:20px;border-radius:20px;}
+
+.modal-body{padding:20px 26px 26px;}
+.modal-sec-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.11em;
+  color:var(--light);margin-bottom:12px;}
+.kra-table{width:100%;border-collapse:collapse;}
+.kra-table th{text-align:left;font-size:9.5px;text-transform:uppercase;letter-spacing:.04em;
+  color:var(--light);font-weight:700;padding:0 6px 8px 0;}
+.kra-table th:not(:first-child){text-align:right;}
+.kra-table td{padding:11px 6px;font-size:13px;border-top:1px solid var(--border);vertical-align:middle;}
+.kra-table td:first-child{padding-left:0;}
+.kra-table td.num{text-align:right;font-variant-numeric:tabular-nums;}
+.kra-name{font-weight:600;color:var(--mid);}
+.kra-kpi{font-size:10.5px;color:var(--light);margin-top:1px;}
+.kra-total-row td{border-top:2px solid var(--dark);font-weight:700;padding-top:13px;}
+
+/* MD input cells */
+.plan-input{width:64px;padding:7px 8px;border:1.5px solid var(--border);border-radius:8px;
+  font-family:'DM Sans',sans-serif;font-size:13px;text-align:right;color:var(--dark);
+  background:#FFFDF9;transition:border-color .18s;}
+.plan-input:focus{outline:none;border-color:var(--gold);background:#fff;}
+.plan-th{color:var(--gold)!important;}
+
+.md-input-bar{margin-top:20px;background:#FFF8E7;border:1px solid rgba(184,146,42,.25);
+  border-radius:12px;padding:16px 18px;}
+.md-input-title{font-size:12px;font-weight:700;color:var(--gold);margin-bottom:4px;
+  display:flex;align-items:center;gap:6px;}
+.md-input-hint{font-size:11.5px;color:var(--mid);line-height:1.5;margin-bottom:14px;}
+.md-submit{background:linear-gradient(135deg,var(--crimson),var(--crimson-dark));color:#fff;border:none;
+  border-radius:10px;padding:11px 22px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;
+  cursor:pointer;width:100%;transition:opacity .18s;letter-spacing:.02em;}
+.md-submit:hover{opacity:.92;}
+.md-submit:disabled{opacity:.5;cursor:default;}
+.md-submit.saved{background:linear-gradient(135deg,var(--s-good),#1b5e20);}
+.md-status{font-size:11.5px;text-align:center;margin-top:10px;min-height:16px;}
+.md-status.ok{color:var(--s-good);}
+.md-status.err{color:var(--s-bad);}
+
+@media(max-width:680px){
+  .admin-main{padding:20px 16px 48px;}
+  .admin-header{padding:0 16px;}
+  .h-divider{display:none;}
+  .stats-row{grid-template-columns:repeat(2,1fr);gap:10px;}
+  .kra-pills{display:none;}
+  .kra-table{font-size:12px;}
+  .plan-input{width:54px;}
+}
+</style>
+</head>
+<body>
+
+<div class="test-ribbon">
+  ● LIVE TRIAL — Accounts loaded from real sheets · other departments awaiting data
+  <span class="tr-badge">Swipe + MD input enabled</span>
+</div>
+
+<header class="admin-header">
+  <img class="h-logo" src="https://lovehome.in/wp-content/uploads/2024/09/Love-Home-01-e1726049019796.png" alt="Love Home">
+  <div class="h-divider"></div>
+  <div class="h-title">Love Home<small>MD Command Centre</small></div>
+  <div class="h-spacer"></div>
+  <div class="h-badge" id="hBadge">Weekly Scoring</div>
+</header>
+
+<main class="admin-main">
+  <div class="page-title">Employee <span>Score</span>board</div>
+  <div class="page-sub">Weekly KRA performance across all departments — Love Home Real Estate</div>
+
+  <div class="dept-tabs" id="deptTabs"></div>
+
+  <div class="stats-row">
+    <div class="stat-card sc-total"><div class="sc-lbl">Employees</div><div class="sc-val" id="sTotal">—</div><div class="sc-sub" id="sTotalSub">In this dept</div></div>
+    <div class="stat-card sc-avg"><div class="sc-lbl">Team Avg</div><div class="sc-val" id="sAvg">—</div><div class="sc-sub">Deviation from plan</div></div>
+    <div class="stat-card sc-top"><div class="sc-lbl">Best This Week</div><div class="sc-val" id="sTop">—</div><div class="sc-sub" id="sTopName">—</div></div>
+    <div class="stat-card sc-attn"><div class="sc-lbl">Needs Attention</div><div class="sc-val" id="sAttn">—</div><div class="sc-sub">Below -10%</div></div>
+  </div>
+
+  <div class="period-note" id="periodNote" style="display:none">
+    📅 &nbsp;Scoring period: <strong id="periodText">—</strong>
+  </div>
+
+  <div class="lb-header-row">
+    <div class="lb-title">Ranking</div>
+    <div class="lb-count" id="lbCount">—</div>
+  </div>
+  <div class="leaderboard" id="leaderboard"></div>
+</main>
+
+<div class="modal-backdrop" id="scoreModal" onclick="modalBgClick(event)">
+  <div class="score-modal">
+    <button class="modal-x" onclick="closeModal()">✕</button>
+    <button class="modal-nav prev" id="navPrev" onclick="event.stopPropagation();navEmp(-1)">‹</button>
+    <button class="modal-nav next" id="navNext" onclick="event.stopPropagation();navEmp(1)">›</button>
+
+    <div class="modal-head">
+      <div class="modal-av" id="mAv">??</div>
+      <div>
+        <div class="modal-h-name" id="mName">—</div>
+        <div class="modal-h-meta" id="mMeta">—</div>
+      </div>
+      <div class="modal-total">
+        <div class="modal-score-big" id="mScore">—</div>
+        <div class="modal-score-lbl">avg deviation</div>
+      </div>
+    </div>
+    <div class="modal-pager" id="mPager"></div>
+
+    <div class="modal-body">
+      <div class="modal-sec-title">This week's scoring &amp; next week's plan</div>
+      <table class="kra-table">
+        <thead>
+          <tr>
+            <th>KRA</th><th>Planned</th><th>Actual</th><th>Deviation</th>
+            <th class="plan-th">Next Wk Plan</th>
+          </tr>
+        </thead>
+        <tbody id="mKraBody"></tbody>
+      </table>
+
+      <div class="md-input-bar">
+        <div class="md-input-title">✎ &nbsp;MD Input — Next Week Planned</div>
+        <div class="md-input-hint">
+          Enter next week's planned targets above. On submit, these write to
+          column J of this employee's sheet, in front of each KRA.
+        </div>
+        <button class="md-submit" id="mdSubmit" onclick="submitPlan()">Submit Next Week Plan</button>
+        <div class="md-status" id="mdStatus"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   DEPARTMENTS + EMPLOYEE SHEETS
+   Accounts has live data. Other depts are placeholders (empty)
+   to show how the full portal is laid out.
+   Later: this whole block comes from a Directory Sheet (CSV) —
+   no code edits when you add employees.
+   ═══════════════════════════════════════════════════════════════ */
+const DEPARTMENTS = [
+  { name: 'Accounts',    icon: '💰', employees: [
+    { url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vTcKI3u1d-fZpcVQnYgY64cPAHNKy75QAXwukwqYzKUTnceWvEktfytiSFrrO9jl8KK5r9Tf8ukk-dC/pub?gid=1982518512&single=true&output=csv' },
+    { url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vQfnxCB-uipHOHXIafdeK39PIJk3twg8gHNHnI_l1IS4IoWdmavxbt8X-_fQuflMWoFvm7gBovPRisK/pub?gid=1248096495&single=true&output=csv' },
+    { url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vST6yYF-bn0Rpihfx_aQX1Xzjjro5Je8oCND56Wz6be8B4TBOVyARgtJyjIdNUGID9OIhDjlToB9dXl/pub?gid=685130104&single=true&output=csv' },
+  ]},
+  { name: 'Sales',              icon: '📈', employees: [] },
+  { name: 'CRM',                icon: '📞', employees: [] },
+  { name: 'MDO',                icon: '⚙️', employees: [] },
+  { name: 'HR',                 icon: '👥', employees: [] },
+  { name: 'Purchase',           icon: '🛒', employees: [] },
+  { name: 'Business Development',icon: '🤝', employees: [] },
+  { name: 'Construction',       icon: '🏗️', employees: [] },
+];
+
+const KRA_LABELS = ['Work Completion', 'On-Time Delivery', 'Attendance'];
+const AV_COLORS = ['av-c0','av-c1','av-c2','av-c3','av-c4'];
+const ATTN_THRESHOLD = -10;
+
+let curDept = 0;
+let deptRecords = [];   // records for the active department
+let modalIdx = 0;       // which employee is open in the modal
+
+document.addEventListener('DOMContentLoaded', () => {
+  buildTabs();
+  selectDept(0);
+  document.addEventListener('keydown', onKey);
+});
+
+function buildTabs() {
+  const c = document.getElementById('deptTabs');
+  c.innerHTML = DEPARTMENTS.map((d, i) => {
+    const cnt = d.employees.length;
+    return `<button class="dept-tab${i===0?' active':''}" onclick="selectDept(${i})">
+      ${d.icon} ${d.name}
+      <span class="cnt">${cnt}</span>
+    </button>`;
+  }).join('');
+}
+
+async function selectDept(i) {
+  curDept = i;
+  document.querySelectorAll('.dept-tab').forEach((t, idx) => t.classList.toggle('active', idx === i));
+  const dept = DEPARTMENTS[i];
+  document.getElementById('sTotalSub').textContent = dept.name;
+
+  const lb = document.getElementById('leaderboard');
+
+  if (dept.employees.length === 0) {
+    deptRecords = [];
+    document.getElementById('hBadge').textContent = dept.name;
+    document.getElementById('periodNote').style.display = 'none';
+    ['sTotal','sAvg','sTop','sAttn'].forEach(id => setText(id, '—'));
+    setText('sTopName', '—');
+    setText('lbCount', '0 employees');
+    lb.innerHTML = `
+      <div class="empty-dept">
+        <div class="empty-dept-ico">${dept.icon}</div>
+        <div class="empty-dept-title">${dept.name} — no data yet</div>
+        <div class="empty-dept-text">
+          Share this department's employee scoring-sheet links and they'll appear here,<br>
+          exactly like the Accounts team.
+        </div>
+      </div>`;
+    return;
+  }
+
+  lb.innerHTML = `<div class="load-state"><div class="load-spin"></div>Fetching ${dept.name} scoring data…</div>`;
+
+  const results = await Promise.allSettled(dept.employees.map(e => fetchEmployee(e.url)));
+  deptRecords = [];
+  results.forEach((r, idx) => {
+    if (r.status === 'fulfilled' && r.value) {
+      r.value._url = dept.employees[idx].url;
+      deptRecords.push(r.value);
+    }
+  });
+  deptRecords.sort((a, b) => b.avg.pct - a.avg.pct);
+
+  document.getElementById('hBadge').textContent = `${dept.name} · ${deptRecords.length}`;
+
+  if (deptRecords.length > 0) {
+    const p = deptRecords[0];
+    document.getElementById('periodNote').style.display = 'flex';
+    document.getElementById('periodText').textContent = formatPeriod(p.periodStart, p.periodEnd);
+  }
+
+  renderStats();
+  renderLeaderboard();
+}
+
+async function fetchEmployee(url) {
+  const res = await fetch(url + '&_nc=' + Date.now());
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  return parseEmployeeCSV(await res.text());
+}
+
+function parseEmployeeCSV(csv) {
+  const lines = csv.trim().split('\n').map(splitCSVLine);
+  const name = cleanName((lines[0] && lines[0][1]) || 'Unknown');
+  const department = (lines[1] && lines[1][1]) || '';
+  const periodStart = (lines[2] && lines[2][1]) || '';
+  const periodEnd   = (lines[2] && lines[2][2]) || '';
+
+  const kras = [4,5,6].map((idx, i) => {
+    const row = lines[idx] || [];
+    return { label: KRA_LABELS[i], kpi: row[2]||'',
+      planned: parseNum(row[5]), actual: parseNum(row[6]), pct: parseNum(row[7]),
+      nextPlan: (row[8]||'').trim() };
+  });
+  const avgRow = lines[7] || [];
+  const avg = { planned: parseNum(avgRow[5]), actual: parseNum(avgRow[6]), pct: parseNum(avgRow[7]) };
+  return { name, department, periodStart, periodEnd, kras, avg };
+}
+
+function splitCSVLine(line){
+  const out=[];let cur='';let inQ=false;
+  for(let i=0;i<line.length;i++){const c=line[i];
+    if(c==='"')inQ=!inQ;else if(c===','&&!inQ){out.push(cur);cur='';}else cur+=c;}
+  out.push(cur);return out.map(v=>v.replace(/^"|"$/g,'').trim());
+}
+function parseNum(v){const n=parseFloat((v||'').replace(/[^0-9.\-]/g,''));return isNaN(n)?0:n;}
+function cleanName(n){return (n||'').replace(/^(Mr\.|Mrs\.|Ms\.)\s*/i,'').trim()||'Unknown';}
+function formatPeriod(s,e){try{const a=new Date(s),b=new Date(e);const o={day:'numeric',month:'short'};
+  return `${a.toLocaleDateString('en-IN',o)} – ${b.toLocaleDateString('en-IN',o)}, ${b.getFullYear()}`;
+}catch(x){return `${s} – ${e}`;}}
+
+function renderStats(){
+  const n=deptRecords.length;
+  const avg=n?deptRecords.reduce((s,r)=>s+r.avg.pct,0)/n:0;
+  const top=deptRecords[0];
+  const attn=deptRecords.filter(r=>r.avg.pct<ATTN_THRESHOLD).length;
+  setText('sTotal',n||'—');
+  setText('sAvg',n?fmtPct(avg):'—');
+  setText('sTop',top?fmtPct(top.avg.pct):'—');
+  setText('sTopName',top?top.name:'—');
+  setText('sAttn',n?attn:'—');
+}
+
+function renderLeaderboard(){
+  const lb=document.getElementById('leaderboard');
+  setText('lbCount',`${deptRecords.length} employee${deptRecords.length!==1?'s':''}`);
+  lb.innerHTML=deptRecords.map((r,i)=>{
+    const rank=i+1;
+    const initials=r.name.split(' ').map(w=>w[0]||'').join('').substring(0,2).toUpperCase();
+    const rowCls=rank<=3?`lbr-${rank}`:'';
+    const medal=rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':`#${rank}`;
+    const scCls=pctCls(r.avg.pct);
+    const pills=r.kras.map(k=>`<div class="kra-pill ${pillCls(k.pct)}" title="${k.label}: ${fmtPct(k.pct)}"></div>`).join('');
+    return `<div class="lb-row ${rowCls}" onclick="openModal(${i})">
+      <div class="lb-rank ${scCls}">${medal}</div>
+      <div class="lb-av ${AV_COLORS[i%AV_COLORS.length]}">${initials}</div>
+      <div class="lb-info"><div class="lb-name">${r.name}</div><div class="lb-meta">${r.department}</div></div>
+      <div class="kra-pills">${pills}</div>
+      <div class="lb-score-col"><div class="lb-score-num ${scCls}">${fmtPct(r.avg.pct)}</div>
+      <div class="lb-score-lbl">avg deviation</div></div>
+    </div>`;
+  }).join('');
+}
+
+/* ── MODAL with swipe navigation ── */
+function openModal(idx){
+  modalIdx=idx;
+  renderModal();
+  document.getElementById('scoreModal').classList.add('open');
+}
+
+function renderModal(){
+  const r=deptRecords[modalIdx];
+  if(!r)return;
+  const initials=r.name.split(' ').map(w=>w[0]||'').join('').substring(0,2).toUpperCase();
+  const av=document.getElementById('mAv');
+  av.textContent=initials; av.className=`modal-av ${AV_COLORS[modalIdx%AV_COLORS.length]}`;
+  setText('mName',r.name);
+  document.getElementById('mMeta').textContent=`${r.department} · Rank #${modalIdx+1} of ${deptRecords.length}`;
+  const scEl=document.getElementById('mScore');
+  scEl.textContent=fmtPct(r.avg.pct); scEl.className='modal-score-big '+pctCls(r.avg.pct);
+
+  // KRA rows with MD input
+  document.getElementById('mKraBody').innerHTML=r.kras.map((k,ki)=>`
+    <tr>
+      <td><div class="kra-name">${k.label}</div><div class="kra-kpi">${k.kpi}</div></td>
+      <td class="num">${k.planned}</td>
+      <td class="num">${k.actual}</td>
+      <td class="num ${pctCls(k.pct)}">${fmtPct(k.pct)}</td>
+      <td class="num"><input class="plan-input" id="plan-${ki}" type="number" step="any"
+           value="${k.nextPlan||''}" placeholder="—"></td>
+    </tr>`).join('')+`
+    <tr class="kra-total-row">
+      <td>Average Scoring</td>
+      <td class="num">${r.avg.planned}</td>
+      <td class="num">${r.avg.actual}</td>
+      <td class="num ${pctCls(r.avg.pct)}">${fmtPct(r.avg.pct)}</td>
+      <td></td>
+    </tr>`;
+
+  // pager dots
+  document.getElementById('mPager').innerHTML=deptRecords.map((_,i)=>
+    `<div class="pager-dot${i===modalIdx?' active':''}"></div>`).join('');
+
+  // nav button states
+  document.getElementById('navPrev').disabled = modalIdx===0;
+  document.getElementById('navNext').disabled = modalIdx===deptRecords.length-1;
+
+  // reset submit button
+  const btn=document.getElementById('mdSubmit');
+  btn.textContent='Submit Next Week Plan'; btn.className='md-submit'; btn.disabled=false;
+  setText('mdStatus','');
+  document.getElementById('mdStatus').className='md-status';
+}
+
+function navEmp(dir){
+  const next=modalIdx+dir;
+  if(next<0||next>=deptRecords.length)return;
+  modalIdx=next; renderModal();
+}
+function onKey(e){
+  if(!document.getElementById('scoreModal').classList.contains('open'))return;
+  if(e.key==='ArrowLeft')navEmp(-1);
+  else if(e.key==='ArrowRight')navEmp(1);
+  else if(e.key==='Escape')closeModal();
+}
+
+/* touch swipe */
+let touchX=null;
+document.getElementById('scoreModal').addEventListener('touchstart',e=>{touchX=e.touches[0].clientX;},{passive:true});
+document.getElementById('scoreModal').addEventListener('touchend',e=>{
+  if(touchX===null)return;
+  const dx=e.changedTouches[0].clientX-touchX;
+  if(Math.abs(dx)>60)navEmp(dx<0?1:-1);
+  touchX=null;
+},{passive:true});
+
+function submitPlan(){
+  const r=deptRecords[modalIdx];
+  const vals=r.kras.map((k,ki)=>{
+    const el=document.getElementById('plan-'+ki);
+    return el?el.value.trim():'';
+  });
+  const status=document.getElementById('mdStatus');
+  const btn=document.getElementById('mdSubmit');
+
+  if(vals.every(v=>v==='')){
+    status.className='md-status err';
+    status.textContent='Enter at least one value before submitting.';
+    return;
+  }
+
+  btn.disabled=true; btn.textContent='Saving…';
+
+  /* ═══════════════════════════════════════════════════════
+     WRITE-BACK HOOK
+     Right now this is a UI-only demo (no live write).
+     Once you deploy the Apps Script Web App, replace the
+     setTimeout block below with a real fetch() POST to your
+     script URL, sending { sheetUrl, values } — the script
+     writes each value into column J of the matching KRA row.
+     ═══════════════════════════════════════════════════════ */
+  setTimeout(()=>{
+    // Locally reflect the saved values so the UI feels real
+    r.kras.forEach((k,ki)=>{ k.nextPlan=vals[ki]; });
+    btn.textContent='✓ Saved (demo)'; btn.className='md-submit saved';
+    status.className='md-status ok';
+    status.textContent='Demo mode: values captured. Live write to column J activates after Apps Script setup.';
+  },700);
+}
+
+function modalBgClick(e){if(e.target===document.getElementById('scoreModal'))closeModal();}
+function closeModal(){document.getElementById('scoreModal').classList.remove('open');}
+
+function fmtPct(v){const s=v>0?'+':'';return `${s}${v.toFixed(2)}%`;}
+function pctCls(v){return v>=0?'sc-good':v>=ATTN_THRESHOLD?'sc-warn':'sc-bad';}
+function pillCls(v){return v>=0?'pill-good':v>=ATTN_THRESHOLD?'pill-warn':'pill-bad';}
+function setText(id,v){const el=document.getElementById(id);if(el)el.textContent=v;}
+</script>
+</body>
+</html>
