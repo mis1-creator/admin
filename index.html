@@ -120,7 +120,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--ivory);color:var(--dark);
   display:flex;align-items:center;justify-content:center;padding:20px;
   opacity:0;pointer-events:none;transition:opacity .22s;}
 .modal-backdrop.open{opacity:1;pointer-events:all;}
-.score-modal{background:var(--card-bg);border-radius:22px;width:100%;max-width:500px;
+.score-modal{background:var(--card-bg);border-radius:22px;width:100%;max-width:640px;
   max-height:92vh;overflow-y:auto;box-shadow:0 32px 80px rgba(0,0,0,.32);position:relative;}
 .score-modal::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;
   background:linear-gradient(90deg,var(--crimson),var(--gold));border-radius:22px 22px 0 0;}
@@ -135,9 +135,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--ivory);color:var(--dark);
   box-shadow:0 4px 14px rgba(0,0,0,.3);transition:opacity .18s,transform .18s;opacity:.85;}
 .modal-nav:hover{opacity:1;transform:translateY(-50%) scale(1.08);}
 .modal-nav:disabled{opacity:.2;cursor:default;transform:translateY(-50%);}
-.modal-nav.prev{left:-19px;}
-.modal-nav.next{right:-19px;}
-@media(max-width:560px){.modal-nav.prev{left:8px;}.modal-nav.next{right:8px;}}
+.modal-nav.prev{left:10px;}
+.modal-nav.next{right:10px;}
 
 .modal-head{padding:26px 26px 18px;display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--border);}
 .modal-av{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;
@@ -155,7 +154,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--ivory);color:var(--dark);
 .modal-body{padding:20px 26px 26px;}
 .modal-sec-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.11em;
   color:var(--light);margin-bottom:12px;}
-.kra-table{width:100%;border-collapse:collapse;}
+.kra-table{width:100%;border-collapse:collapse;table-layout:fixed;}
+.kra-table th:first-child,.kra-table td:first-child{width:38%;}
+.kra-table th:last-child,.kra-table td:last-child{width:110px;}
 .kra-table th{text-align:left;font-size:9.5px;text-transform:uppercase;letter-spacing:.04em;
   color:var(--light);font-weight:700;padding:0 6px 8px 0;}
 .kra-table th:not(:first-child){text-align:right;}
@@ -167,7 +168,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--ivory);color:var(--dark);
 .kra-total-row td{border-top:2px solid var(--dark);font-weight:700;padding-top:13px;}
 
 /* MD input cells */
-.plan-input{width:64px;padding:7px 8px;border:1.5px solid var(--border);border-radius:8px;
+.plan-input{width:92px;padding:9px 11px;border:1.5px solid var(--border);border-radius:8px;
   font-family:'DM Sans',sans-serif;font-size:13px;text-align:right;color:var(--dark);
   background:#FFFDF9;transition:border-color .18s;}
 .plan-input:focus{outline:none;border-color:var(--gold);background:#fff;}
@@ -195,7 +196,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--ivory);color:var(--dark);
   .stats-row{grid-template-columns:repeat(2,1fr);gap:10px;}
   .kra-pills{display:none;}
   .kra-table{font-size:12px;}
-  .plan-input{width:54px;}
+  .plan-input{width:70px;padding:8px 9px;}
+  .modal-nav{width:32px;height:32px;font-size:14px;}
+  .modal-nav.prev{left:6px;}
+  .modal-nav.next{right:6px;}}
 }
 </style>
 </head>
