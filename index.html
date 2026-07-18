@@ -120,7 +120,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--ivory);color:var(--dark);
   display:flex;align-items:center;justify-content:center;padding:20px;
   opacity:0;pointer-events:none;transition:opacity .22s;}
 .modal-backdrop.open{opacity:1;pointer-events:all;}
-.score-modal{background:var(--card-bg);border-radius:22px;width:100%;max-width:640px;
+.score-modal{background:var(--card-bg);border-radius:22px;width:100%;max-width:700px;
   max-height:92vh;overflow-y:auto;box-shadow:0 32px 80px rgba(0,0,0,.32);position:relative;}
 .score-modal::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;
   background:linear-gradient(90deg,var(--crimson),var(--gold));border-radius:22px 22px 0 0;}
@@ -128,15 +128,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--ivory);color:var(--dark);
   width:32px;height:32px;font-size:14px;color:var(--mid);cursor:pointer;
   display:flex;align-items:center;justify-content:center;z-index:2;}
 
-/* swipe nav arrows */
-.modal-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:2;
-  width:38px;height:38px;border-radius:50%;border:none;cursor:pointer;
-  background:var(--dark);color:#fff;font-size:16px;display:flex;align-items:center;justify-content:center;
-  box-shadow:0 4px 14px rgba(0,0,0,.3);transition:opacity .18s,transform .18s;opacity:.85;}
-.modal-nav:hover{opacity:1;transform:translateY(-50%) scale(1.08);}
-.modal-nav:disabled{opacity:.2;cursor:default;transform:translateY(-50%);}
-.modal-nav.prev{left:10px;}
-.modal-nav.next{right:10px;}
+/* swipe nav arrows - inline with pager */
+.modal-nav{width:30px;height:30px;border-radius:50%;border:1px solid var(--border);cursor:pointer;
+  background:var(--card-bg);color:var(--mid);font-size:15px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .18s;font-family:'DM Sans',sans-serif;}
+.modal-nav:hover:not(:disabled){background:var(--dark);color:#fff;border-color:var(--dark);}
+.modal-nav:disabled{opacity:.25;cursor:default;}
 
 .modal-head{padding:26px 26px 18px;display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--border);}
 .modal-av{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;
@@ -147,7 +145,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--ivory);color:var(--dark);
 .modal-score-big{font-family:'Playfair Display',serif;font-size:32px;font-weight:700;line-height:1;}
 .modal-score-lbl{font-size:10px;color:var(--light);}
 
-.modal-pager{display:flex;justify-content:center;gap:6px;padding:10px 0 0;}
+.modal-pager{display:flex;justify-content:center;align-items:center;gap:14px;padding:14px 0 2px;}
+.pager-dots{display:flex;gap:6px;align-items:center;}
 .pager-dot{width:7px;height:7px;border-radius:50%;background:var(--border);transition:background .2s,width .2s;}
 .pager-dot.active{background:var(--gold);width:20px;border-radius:20px;}
 
@@ -155,8 +154,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--ivory);color:var(--dark);
 .modal-sec-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.11em;
   color:var(--light);margin-bottom:12px;}
 .kra-table{width:100%;border-collapse:collapse;table-layout:fixed;}
-.kra-table th:first-child,.kra-table td:first-child{width:38%;}
-.kra-table th:last-child,.kra-table td:last-child{width:110px;}
+.kra-table th:first-child,.kra-table td:first-child{width:36%;}
+.kra-table th:last-child,.kra-table td:last-child{width:120px;}
 .kra-table th{text-align:left;font-size:9.5px;text-transform:uppercase;letter-spacing:.04em;
   color:var(--light);font-weight:700;padding:0 6px 8px 0;}
 .kra-table th:not(:first-child){text-align:right;}
@@ -168,17 +167,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--ivory);color:var(--dark);
 .kra-total-row td{border-top:2px solid var(--dark);font-weight:700;padding-top:13px;}
 
 /* MD input cells */
-.plan-input{width:92px;padding:9px 11px;border:1.5px solid var(--border);border-radius:8px;
+.plan-input{width:100px;padding:9px 11px;border:1.5px solid var(--border);border-radius:8px;
   font-family:'DM Sans',sans-serif;font-size:13px;text-align:right;color:var(--dark);
   background:#FFFDF9;transition:border-color .18s;}
 .plan-input:focus{outline:none;border-color:var(--gold);background:#fff;}
 .plan-th{color:var(--gold)!important;}
 
-.md-input-bar{margin-top:20px;background:#FFF8E7;border:1px solid rgba(184,146,42,.25);
-  border-radius:12px;padding:16px 18px;}
-.md-input-title{font-size:12px;font-weight:700;color:var(--gold);margin-bottom:4px;
-  display:flex;align-items:center;gap:6px;}
-.md-input-hint{font-size:11.5px;color:var(--mid);line-height:1.5;margin-bottom:14px;}
+.md-input-bar{margin-top:22px;}
 .md-submit{background:linear-gradient(135deg,var(--crimson),var(--crimson-dark));color:#fff;border:none;
   border-radius:10px;padding:11px 22px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;
   cursor:pointer;width:100%;transition:opacity .18s;letter-spacing:.02em;}
@@ -196,10 +191,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--ivory);color:var(--dark);
   .stats-row{grid-template-columns:repeat(2,1fr);gap:10px;}
   .kra-pills{display:none;}
   .kra-table{font-size:12px;}
-  .plan-input{width:70px;padding:8px 9px;}
-  .modal-nav{width:32px;height:32px;font-size:14px;}
-  .modal-nav.prev{left:6px;}
-  .modal-nav.next{right:6px;}}
+  .kra-table th:last-child,.kra-table td:last-child{width:86px;}
+  .plan-input{width:76px;padding:8px 9px;}
 }
 </style>
 </head>
@@ -245,8 +238,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--ivory);color:var(--dark);
 <div class="modal-backdrop" id="scoreModal" onclick="modalBgClick(event)">
   <div class="score-modal">
     <button class="modal-x" onclick="closeModal()">✕</button>
-    <button class="modal-nav prev" id="navPrev" onclick="event.stopPropagation();navEmp(-1)">‹</button>
-    <button class="modal-nav next" id="navNext" onclick="event.stopPropagation();navEmp(1)">›</button>
 
     <div class="modal-head">
       <div class="modal-av" id="mAv">??</div>
@@ -259,7 +250,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--ivory);color:var(--dark);
         <div class="modal-score-lbl">avg deviation</div>
       </div>
     </div>
-    <div class="modal-pager" id="mPager"></div>
+    <div class="modal-pager">
+      <button class="modal-nav" id="navPrev" onclick="event.stopPropagation();navEmp(-1)">‹</button>
+      <div class="pager-dots" id="mPager"></div>
+      <button class="modal-nav" id="navNext" onclick="event.stopPropagation();navEmp(1)">›</button>
+    </div>
 
     <div class="modal-body">
       <div class="modal-sec-title">This week's scoring &amp; next week's plan</div>
@@ -274,11 +269,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--ivory);color:var(--dark);
       </table>
 
       <div class="md-input-bar">
-        <div class="md-input-title">✎ &nbsp;MD Input — Next Week Planned</div>
-        <div class="md-input-hint">
-          Enter next week's planned targets above. On submit, these write to
-          column J of this employee's sheet, in front of each KRA.
-        </div>
         <button class="md-submit" id="mdSubmit" onclick="submitPlan()">Submit Next Week Plan</button>
         <div class="md-status" id="mdStatus"></div>
       </div>
