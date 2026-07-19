@@ -199,8 +199,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--ivory);color:var(--dark);
 <body>
 
 <div class="test-ribbon">
-  ● LIVE TRIAL — Accounts loaded from real sheets · other departments awaiting data
-  <span class="tr-badge">Swipe + MD input enabled</span>
+  ● LIVE — All departments loaded from the Directory Sheet
+  <span class="tr-badge" id="dirSummary">Loading…</span>
 </div>
 
 <header class="admin-header">
@@ -278,26 +278,32 @@ body{font-family:'DM Sans',sans-serif;background:var(--ivory);color:var(--dark);
 
 <script>
 /* ═══════════════════════════════════════════════════════════════
-   DEPARTMENTS + EMPLOYEE SHEETS
-   Accounts has live data. Other depts are placeholders (empty)
-   to show how the full portal is laid out.
-   Later: this whole block comes from a Directory Sheet (CSV) —
-   no code edits when you add employees.
+   ❶  PASTE YOUR TWO LINKS HERE  ←←←  ONLY THING YOU NEED TO EDIT
    ═══════════════════════════════════════════════════════════════ */
-const DEPARTMENTS = [
-  { name: 'Accounts',    icon: '💰', employees: [
-    { url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vTcKI3u1d-fZpcVQnYgY64cPAHNKy75QAXwukwqYzKUTnceWvEktfytiSFrrO9jl8KK5r9Tf8ukk-dC/pub?gid=1982518512&single=true&output=csv' },
-    { url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vQfnxCB-uipHOHXIafdeK39PIJk3twg8gHNHnI_l1IS4IoWdmavxbt8X-_fQuflMWoFvm7gBovPRisK/pub?gid=1248096495&single=true&output=csv' },
-    { url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vST6yYF-bn0Rpihfx_aQX1Xzjjro5Je8oCND56Wz6be8B4TBOVyARgtJyjIdNUGID9OIhDjlToB9dXl/pub?gid=685130104&single=true&output=csv' },
-  ]},
-  { name: 'Sales',              icon: '📈', employees: [] },
-  { name: 'CRM',                icon: '📞', employees: [] },
-  { name: 'MDO',                icon: '⚙️', employees: [] },
-  { name: 'HR',                 icon: '👥', employees: [] },
-  { name: 'Purchase',           icon: '🛒', employees: [] },
-  { name: 'Business Development',icon: '🤝', employees: [] },
-  { name: 'Construction',       icon: '🏗️', employees: [] },
-];
+
+// LINK 1 — Directory Sheet, published as CSV.
+//          Columns: A=Name  B=Department  C=URL  D=Key
+const DIRECTORY_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQJVE4nivZRSL0GXzbpnQj8Jz3Bq-OKS_OahJGMEas9XAkG7ZvDVMvUylhO9VnWybMuxGWC2s-wj-l7/pub?gid=0&single=true&output=csv';
+
+// LINK 2 — Apps Script Web App URL (Deploy → New deployment → Web app).
+//          Leave as-is for now if the script isn't deployed yet;
+//          everything except the Submit button will still work.
+const SCRIPT_URL = 'PASTE_APPS_SCRIPT_WEB_APP_URL_HERE';
+
+// Must match the SECRET value inside your Apps Script.
+const SECRET = 'LoveHome@2026#MDPortal';
+
+/* ═══════════════════════════════════════════════════════════════
+   ❷  Department icons — any dept not listed gets 🏢
+   ═══════════════════════════════════════════════════════════════ */
+const DEPT_ICONS = {
+  'accounts':'💰','sales':'📈','crm':'📞','mdo':'⚙️','hr':'👥',
+  'purchase':'🛒','telecaller':'☎️','business development':'🤝',
+  'bd':'🤝','construction':'🏗️','marketing':'📣','admin':'🗂️',
+};
+
+// Built at runtime from the Directory Sheet — do not edit.
+let DEPARTMENTS = [];
 
 const KRA_LABELS = ['Work Completion', 'On-Time Delivery', 'Attendance'];
 const AV_COLORS = ['av-c0','av-c1','av-c2','av-c3','av-c4'];
@@ -308,10 +314,75 @@ let deptRecords = [];   // records for the active department
 let modalIdx = 0;       // which employee is open in the modal
 
 document.addEventListener('DOMContentLoaded', () => {
-  buildTabs();
-  selectDept(0);
   document.addEventListener('keydown', onKey);
+  loadDirectory();
 });
+
+/* ═══════════════════════════════════════════════════════
+   LOAD DIRECTORY SHEET → build departments
+   ═══════════════════════════════════════════════════════ */
+async function loadDirectory(){
+  const lb=document.getElementById('leaderboard');
+  lb.innerHTML=`<div class="load-state"><div class="load-spin"></div>Loading employee directory…</div>`;
+
+  if(!DIRECTORY_URL||DIRECTORY_URL.indexOf('PASTE_')===0){
+    document.getElementById('hBadge').textContent='Not connected';
+    lb.innerHTML=`<div class="empty-dept">
+      <div class="empty-dept-ico">📋</div>
+      <div class="empty-dept-title">Directory Sheet not connected</div>
+      <div class="empty-dept-text">Open this file and set <b>DIRECTORY_URL</b><br>to your published Directory Sheet CSV link.</div>
+    </div>`;
+    return;
+  }
+
+  try{
+    const res=await fetch(DIRECTORY_URL+'&_nc='+Date.now());
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const lines=(await res.text()).trim().split('\n').map(splitCSVLine);
+
+    const groups={}, order=[];
+    for(let i=1;i<lines.length;i++){
+      const row=lines[i]||[];
+      const name=(row[0]||'').trim();
+      const dept=(row[1]||'').trim();
+      const url =(row[2]||'').trim();
+      const key =(row[3]||'').trim().toLowerCase();
+      if(!name||!url||!dept) continue;
+      if(!groups[dept]){ groups[dept]=[]; order.push(dept); }
+      groups[dept].push({ name, url, key });
+    }
+
+    DEPARTMENTS=order.map(d=>({
+      name:d,
+      icon:DEPT_ICONS[d.toLowerCase()]||'🏢',
+      employees:groups[d]
+    }));
+
+    if(DEPARTMENTS.length===0){
+      document.getElementById('hBadge').textContent='Empty';
+      lb.innerHTML=`<div class="empty-dept">
+        <div class="empty-dept-ico">📋</div>
+        <div class="empty-dept-title">Directory is empty</div>
+        <div class="empty-dept-text">Add employee rows to the Directory Sheet, then refresh.</div>
+      </div>`;
+      return;
+    }
+
+    const total=DEPARTMENTS.reduce((n,d)=>n+d.employees.length,0);
+    setText('dirSummary',`${total} employees · ${DEPARTMENTS.length} departments`);
+
+    buildTabs();
+    selectDept(0);
+
+  }catch(err){
+    document.getElementById('hBadge').textContent='Load failed';
+    lb.innerHTML=`<div class="empty-dept">
+      <div class="empty-dept-ico">⚠️</div>
+      <div class="empty-dept-title">Could not load the Directory Sheet</div>
+      <div class="empty-dept-text">Check that it is published to the web as <b>CSV</b><br>and that the link is correct.</div>
+    </div>`;
+  }
+}
 
 function buildTabs() {
   const c = document.getElementById('deptTabs');
@@ -344,8 +415,8 @@ async function selectDept(i) {
         <div class="empty-dept-ico">${dept.icon}</div>
         <div class="empty-dept-title">${dept.name} — no data yet</div>
         <div class="empty-dept-text">
-          Share this department's employee scoring-sheet links and they'll appear here,<br>
-          exactly like the Accounts team.
+          No employees listed for this department in the Directory Sheet.<br>
+          Add a row there and refresh to see them here.
         </div>
       </div>`;
     return;
@@ -358,6 +429,9 @@ async function selectDept(i) {
   results.forEach((r, idx) => {
     if (r.status === 'fulfilled' && r.value) {
       r.value._url = dept.employees[idx].url;
+      r.value._key = dept.employees[idx].key || '';
+      if(!r.value.name || r.value.name === 'Unknown')
+        r.value.name = cleanName(dept.employees[idx].name);
       deptRecords.push(r.value);
     }
   });
@@ -534,21 +608,48 @@ function submitPlan(){
 
   btn.disabled=true; btn.textContent='Saving…';
 
-  /* ═══════════════════════════════════════════════════════
-     WRITE-BACK HOOK
-     Right now this is a UI-only demo (no live write).
-     Once you deploy the Apps Script Web App, replace the
-     setTimeout block below with a real fetch() POST to your
-     script URL, sending { sheetUrl, values } — the script
-     writes each value into column J of the matching KRA row.
-     ═══════════════════════════════════════════════════════ */
-  setTimeout(()=>{
-    // Locally reflect the saved values so the UI feels real
-    r.kras.forEach((k,ki)=>{ k.nextPlan=vals[ki]; });
-    btn.textContent='✓ Saved (demo)'; btn.className='md-submit saved';
-    status.className='md-status ok';
-    status.textContent='Demo mode: values captured. Live write to column J activates after Apps Script setup.';
-  },700);
+  if(!SCRIPT_URL||SCRIPT_URL.indexOf('PASTE_')===0){
+    btn.disabled=false; btn.textContent='Submit Next Week Plan';
+    status.className='md-status err';
+    status.textContent='Apps Script URL not set yet (SCRIPT_URL).';
+    return;
+  }
+  if(!r._key){
+    btn.disabled=false; btn.textContent='Submit Next Week Plan';
+    status.className='md-status err';
+    status.textContent='No Key set for '+r.name+' in the Directory Sheet (column D).';
+    return;
+  }
+
+  fetch(SCRIPT_URL,{
+    method:'POST',
+    // text/plain avoids a CORS preflight, which Apps Script cannot answer
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify({
+      secret:SECRET,
+      employee:r._key,
+      values:vals,
+      week:`${r.periodStart} to ${r.periodEnd}`
+    })
+  })
+  .then(res=>res.json())
+  .then(data=>{
+    if(data.ok){
+      r.kras.forEach((k,ki)=>{ if(vals[ki]!=='') k.nextPlan=vals[ki]; });
+      btn.textContent='✓ Saved to sheet'; btn.className='md-submit saved';
+      status.className='md-status ok';
+      status.textContent=`${data.written} value(s) written to column ${data.column} of ${data.employee}'s sheet.`;
+    }else{
+      btn.disabled=false; btn.textContent='Submit Next Week Plan';
+      status.className='md-status err';
+      status.textContent=data.error||'Write failed.';
+    }
+  })
+  .catch(()=>{
+    btn.disabled=false; btn.textContent='Submit Next Week Plan';
+    status.className='md-status err';
+    status.textContent='Could not reach the Apps Script. Check the deployment URL and that access is set to "Anyone".';
+  });
 }
 
 function modalBgClick(e){if(e.target===document.getElementById('scoreModal'))closeModal();}
