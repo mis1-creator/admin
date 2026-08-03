@@ -43,17 +43,38 @@ body{font-family:'DM Sans',sans-serif;background:var(--ivory);color:var(--dark);
 .page-title span{color:var(--crimson);}
 .page-sub{font-size:13px;color:var(--light);margin-top:5px;margin-bottom:24px;}
 
-/* DEPT TABS */
-.dept-tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;margin-bottom:24px;
-  scrollbar-width:thin;}
+/* PROJECT SWITCH */
+.project-switch{display:inline-flex;gap:4px;background:var(--card-bg);
+  border:1px solid var(--border);border-radius:12px;padding:4px;
+  margin-bottom:16px;box-shadow:var(--shadow);max-width:100%;overflow-x:auto;}
+.proj-btn{background:none;border:none;border-radius:9px;padding:9px 20px;cursor:pointer;
+  font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:var(--light);
+  transition:all .18s;white-space:nowrap;display:flex;align-items:center;gap:7px;flex-shrink:0;}
+.proj-btn:hover{color:var(--gold);}
+.proj-btn.active{background:linear-gradient(135deg,var(--dark),#2d1f15);color:#fff;}
+.proj-btn .pcnt{font-size:10px;font-weight:700;opacity:.55;}
+
+/* DEPT CARDS — all visible at once, no horizontal scrolling */
+.dept-tabs{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+  gap:10px;margin-bottom:24px;}
 .dept-tab{background:var(--card-bg);border:1.5px solid var(--border);border-radius:10px;
-  padding:10px 16px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;
-  color:var(--mid);white-space:nowrap;transition:all .18s;box-shadow:var(--shadow);
-  display:flex;align-items:center;gap:8px;}
-.dept-tab:hover{border-color:var(--gold);color:var(--gold);}
+  padding:11px 12px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600;
+  color:var(--mid);transition:all .18s;box-shadow:var(--shadow);
+  display:flex;flex-direction:row;align-items:center;justify-content:center;gap:7px;
+  text-align:center;position:relative;overflow:hidden;}
+.dept-tab::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:transparent;transition:background .18s;}
+.dept-tab:hover{border-color:var(--gold);color:var(--gold);transform:translateY(-2px);
+  box-shadow:0 6px 18px rgba(26,20,16,.11);}
+.dept-tab:hover::before{background:var(--gold);}
 .dept-tab.active{background:linear-gradient(135deg,var(--crimson),var(--crimson-dark));
-  border-color:var(--crimson);color:#fff;}
-.dept-tab .cnt{background:rgba(0,0,0,.12);border-radius:20px;font-size:10px;padding:1px 7px;font-weight:700;}
+  border-color:var(--crimson);color:#fff;transform:translateY(-2px);
+  box-shadow:0 6px 20px rgba(200,16,46,.28);}
+.dept-tab.active::before{background:var(--gold);}
+.dept-tab .dt-ico{font-size:15px;line-height:1;flex-shrink:0;}
+.dept-tab .dt-name{font-size:12px;line-height:1.2;}
+.dept-tab .cnt{background:rgba(0,0,0,.10);border-radius:20px;font-size:9.5px;
+  padding:1px 7px;font-weight:700;letter-spacing:.02em;flex-shrink:0;}
 .dept-tab.active .cnt{background:rgba(255,255,255,.25);}
 
 /* STATS */
@@ -172,6 +193,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--ivory);color:var(--dark);
   background:#FFFDF9;transition:border-color .18s;}
 .plan-input:focus{outline:none;border-color:var(--gold);background:#fff;}
 .plan-th{color:var(--gold)!important;}
+.no-commit,.met-none{color:var(--light);}
+.met-yes{color:var(--s-good);font-weight:800;font-size:15px;}
+.met-no{color:var(--s-bad);font-weight:700;}
+.met-no small{font-weight:600;font-size:11px;opacity:.85;}
 
 .md-input-bar{margin-top:22px;}
 .md-submit{background:linear-gradient(135deg,var(--crimson),var(--crimson-dark));color:#fff;border:none;
@@ -189,6 +214,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--ivory);color:var(--dark);
   .admin-header{padding:0 16px;}
   .h-divider{display:none;}
   .stats-row{grid-template-columns:repeat(2,1fr);gap:10px;}
+  .project-switch{display:flex;width:100%;}
+  .proj-btn{flex:1;justify-content:center;padding:9px 10px;font-size:12px;}
+  .dept-tabs{grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:7px;}
+  .dept-tab{padding:9px 8px;gap:5px;}
+  .dept-tab .dt-ico{font-size:13px;}
+  .dept-tab .dt-name{font-size:10.5px;}
+  .dept-tab .cnt{font-size:9px;padding:1px 6px;}
   .kra-pills{display:none;}
   .kra-table{font-size:12px;}
   .kra-table th:last-child,.kra-table td:last-child{width:86px;}
@@ -213,8 +245,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--ivory);color:var(--dark);
 
 <main class="admin-main">
   <div class="page-title">Employee <span>Score</span>board</div>
-  <div class="page-sub">Weekly KRA performance across all departments — Love Home Real Estate</div>
+  <div class="page-sub">Weekly KRA performance — <span id="projLabel">Love Home Real Estate</span></div>
 
+  <div class="project-switch" id="projectSwitch"></div>
   <div class="dept-tabs" id="deptTabs"></div>
 
   <div class="stats-row">
@@ -257,11 +290,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--ivory);color:var(--dark);
     </div>
 
     <div class="modal-body">
-      <div class="modal-sec-title">This week's scoring &amp; next week's plan</div>
+      <div class="modal-sec-title">Commitment vs actual &amp; next week's plan</div>
       <table class="kra-table">
         <thead>
           <tr>
-            <th>KRA</th><th>Planned</th><th>Actual</th><th>Deviation</th>
+            <th>KRA</th>
+            <th title="What they committed last week">Committed</th>
+            <th>Actual</th>
+            <th>Met?</th>
             <th class="plan-th">Next Wk Plan</th>
           </tr>
         </thead>
@@ -302,20 +338,36 @@ const DEPT_ICONS = {
   'bd':'🤝','construction':'🏗️','marketing':'📣','admin':'🗂️',
 };
 
+/* Project (site) icons — any project not listed gets 📍 */
+const PROJECT_ICONS = {
+  'jaipur - ho':'🏛️', 'jaipur-ho':'🏛️', 'head office':'🏛️',
+  'marwar':'🏗️', 'all':'🌐',
+};
+
+// Set to true to add a combined "All projects" view alongside the sites.
+const SHOW_ALL_PROJECTS = false;
+
 // Built at runtime from the Directory Sheet — do not edit.
-let DEPARTMENTS = [];
+let DEPARTMENTS   = [];
+let ALL_EMPLOYEES = [];
+let PROJECTS      = [];
+let PROJECT_OPTS  = [];
+let curProject    = '';
 
 const KRA_LABELS = ['Work Completion', 'On-Time Delivery', 'Attendance'];
 const AV_COLORS = ['av-c0','av-c1','av-c2','av-c3','av-c4'];
 const ATTN_THRESHOLD = -10;
 
 let curDept = 0;
+// Incremented on every department click. A fetch that finishes after a
+// newer click has started will see a stale token and discard itself.
+let deptToken = 0;
 let deptRecords = [];   // records for the active department
 let modalIdx = 0;       // which employee is open in the modal
 
 document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('keydown', onKey);
-  loadDirectory();
+  loadDirectory();   // no-auth build: load immediately
 });
 
 /* ═══════════════════════════════════════════════════════
@@ -340,25 +392,23 @@ async function loadDirectory(){
     if(!res.ok) throw new Error('HTTP '+res.status);
     const lines=(await res.text()).trim().split('\n').map(splitCSVLine);
 
-    const groups={}, order=[];
+    ALL_EMPLOYEES=[]; PROJECTS=[];
+    const projSeen=new Set();
+
     for(let i=1;i<lines.length;i++){
       const row=lines[i]||[];
       const name=(row[0]||'').trim();
       const dept=(row[1]||'').trim();
       const url =(row[2]||'').trim();
       const key =(row[3]||'').trim().toLowerCase();
+      const proj=(row[5]||'').trim() || 'Unassigned';   // column F
       if(!name||!url||!dept) continue;
-      if(!groups[dept]){ groups[dept]=[]; order.push(dept); }
-      groups[dept].push({ name, url, key });
+
+      ALL_EMPLOYEES.push({ name, dept, url, key, project:proj });
+      if(!projSeen.has(proj)){ projSeen.add(proj); PROJECTS.push(proj); }
     }
 
-    DEPARTMENTS=order.map(d=>({
-      name:d,
-      icon:DEPT_ICONS[d.toLowerCase()]||'🏢',
-      employees:groups[d]
-    }));
-
-    if(DEPARTMENTS.length===0){
+    if(ALL_EMPLOYEES.length===0){
       document.getElementById('hBadge').textContent='Empty';
       lb.innerHTML=`<div class="empty-dept">
         <div class="empty-dept-ico">📋</div>
@@ -368,11 +418,11 @@ async function loadDirectory(){
       return;
     }
 
-    const total=DEPARTMENTS.reduce((n,d)=>n+d.employees.length,0);
-    setText('dirSummary',`${total} employees · ${DEPARTMENTS.length} departments`);
+    // Default view: combined if more than one project, else the single project
+    curProject = (PROJECTS.length>1 && SHOW_ALL_PROJECTS) ? 'All' : PROJECTS[0];
 
-    buildTabs();
-    selectDept(0);
+    buildProjectSwitch();
+    applyProject();
 
   }catch(err){
     document.getElementById('hBadge').textContent='Load failed';
@@ -384,18 +434,88 @@ async function loadDirectory(){
   }
 }
 
+/* ═══════════════════════════════════════════════════════
+   PROJECT SWITCHER  (Head Office / Marwar / All)
+   ═══════════════════════════════════════════════════════ */
+function buildProjectSwitch(){
+  const c=document.getElementById('projectSwitch');
+
+  // Only one project in the sheet → hide the switcher entirely
+  if(PROJECTS.length<2){ c.style.display='none'; return; }
+  c.style.display='inline-flex';
+
+  // Stored so the click handler can look a project up by index —
+  // avoids any quoting problems with names that contain spaces.
+  PROJECT_OPTS = SHOW_ALL_PROJECTS ? ['All', ...PROJECTS] : PROJECTS.slice();
+
+  c.innerHTML = PROJECT_OPTS.map((p,i)=>{
+    const n  = p==='All' ? ALL_EMPLOYEES.length
+                         : ALL_EMPLOYEES.filter(e=>e.project===p).length;
+    const ic = PROJECT_ICONS[p.toLowerCase()] || '📍';
+    return `<button class="proj-btn${p===curProject?' active':''}" onclick="setProject(${i})">${ic} ${p} <span class="pcnt">${n}</span></button>`;
+  }).join('');
+}
+
+function setProject(i){
+  const p = PROJECT_OPTS[i];
+  if(!p || p===curProject) return;
+  curProject = p;
+  buildProjectSwitch();
+  applyProject();
+}
+
+/* Rebuild the department list for the selected project */
+function applyProject(){
+  const list = (curProject==='All')
+    ? ALL_EMPLOYEES
+    : ALL_EMPLOYEES.filter(e=>e.project===curProject);
+
+  const groups={}, order=[];
+  list.forEach(e=>{
+    if(!groups[e.dept]){ groups[e.dept]=[]; order.push(e.dept); }
+    groups[e.dept].push({ name:e.name, url:e.url, key:e.key });
+  });
+
+  DEPARTMENTS = order.map(d=>({
+    name:d,
+    icon:DEPT_ICONS[d.toLowerCase()]||'🏢',
+    employees:groups[d]
+  }));
+
+  const label = (curProject==='All') ? 'All projects' : curProject;
+  setText('dirSummary', `${label} · ${list.length} employees · ${DEPARTMENTS.length} departments`);
+  setText('projLabel', label);
+
+  if(DEPARTMENTS.length===0){
+    document.getElementById('deptTabs').innerHTML='';
+    document.getElementById('hBadge').textContent=label;
+    document.getElementById('leaderboard').innerHTML=`<div class="empty-dept">
+      <div class="empty-dept-ico">📍</div>
+      <div class="empty-dept-title">No employees in ${label}</div>
+      <div class="empty-dept-text">Set column F to "${label}" for the relevant rows in the Directory Sheet.</div>
+    </div>`;
+    return;
+  }
+
+  curDept = 0;          // new project → always start on its first department
+  buildTabs();
+  selectDept(0);
+}
+
 function buildTabs() {
   const c = document.getElementById('deptTabs');
   c.innerHTML = DEPARTMENTS.map((d, i) => {
     const cnt = d.employees.length;
-    return `<button class="dept-tab${i===0?' active':''}" onclick="selectDept(${i})">
-      ${d.icon} ${d.name}
+    return `<button class="dept-tab${i===curDept?' active':''}" onclick="selectDept(${i})">
+      <span class="dt-ico">${d.icon}</span>
+      <span class="dt-name">${d.name}</span>
       <span class="cnt">${cnt}</span>
     </button>`;
   }).join('');
 }
 
 async function selectDept(i) {
+  const myToken = ++deptToken;
   curDept = i;
   document.querySelectorAll('.dept-tab').forEach((t, idx) => t.classList.toggle('active', idx === i));
   const dept = DEPARTMENTS[i];
@@ -425,6 +545,10 @@ async function selectDept(i) {
   lb.innerHTML = `<div class="load-state"><div class="load-spin"></div>Fetching ${dept.name} scoring data…</div>`;
 
   const results = await Promise.allSettled(dept.employees.map(e => fetchEmployee(e.url)));
+
+  // A newer department was clicked while these were loading — drop this result.
+  if (myToken !== deptToken) return;
+
   deptRecords = [];
   results.forEach((r, idx) => {
     if (r.status === 'fulfilled' && r.value) {
@@ -464,7 +588,12 @@ function parseEmployeeCSV(csv) {
 
   const kras = [4,5,6].map((idx, i) => {
     const row = lines[idx] || [];
+    // Column indices: D=3 LastWk%, E=4 Committment, F=5 Planned,
+    //                 G=6 Actual, H=7 Actual%, I=8 NextWkPlan
+    const commit = (row[4]||'').trim();
     return { label: KRA_LABELS[i], kpi: row[2]||'',
+      commitment: commit,
+      committed: commit!=='',
       planned: parseNum(row[5]), actual: parseNum(row[6]), pct: parseNum(row[7]),
       nextPlan: (row[8]||'').trim() };
   });
@@ -540,9 +669,9 @@ function renderModal(){
   document.getElementById('mKraBody').innerHTML=r.kras.map((k,ki)=>`
     <tr>
       <td><div class="kra-name">${k.label}</div><div class="kra-kpi">${k.kpi}</div></td>
-      <td class="num">${k.planned}</td>
+      <td class="num">${k.committed ? k.commitment : '<span class="no-commit">—</span>'}</td>
       <td class="num">${k.actual}</td>
-      <td class="num ${pctCls(k.pct)}">${fmtPct(k.pct)}</td>
+      <td class="num">${metBadge(k)}</td>
       <td class="num"><input class="plan-input" id="plan-${ki}" type="number" step="any"
            value="${k.nextPlan||''}" placeholder="—"></td>
     </tr>`).join('')+`
@@ -655,6 +784,13 @@ function submitPlan(){
 function modalBgClick(e){if(e.target===document.getElementById('scoreModal'))closeModal();}
 function closeModal(){document.getElementById('scoreModal').classList.remove('open');}
 
+function metBadge(k){
+  if(!k.committed) return '<span class="met-none">\u2014</span>';
+  const c = parseNum(k.commitment);
+  const a = k.actual;
+  if(a >= c) return '<span class="met-yes">\u2713</span>';
+  return '<span class="met-no">\u2717 <small>'+(a-c)+'</small></span>';
+}
 function fmtPct(v){const s=v>0?'+':'';return `${s}${v.toFixed(2)}%`;}
 function pctCls(v){return v>=0?'sc-good':v>=ATTN_THRESHOLD?'sc-warn':'sc-bad';}
 function pillCls(v){return v>=0?'pill-good':v>=ATTN_THRESHOLD?'pill-warn':'pill-bad';}
