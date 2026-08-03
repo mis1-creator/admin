@@ -141,7 +141,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--ivory);color:var(--dark);
   display:flex;align-items:center;justify-content:center;padding:20px;
   opacity:0;pointer-events:none;transition:opacity .22s;}
 .modal-backdrop.open{opacity:1;pointer-events:all;}
-.score-modal{background:var(--card-bg);border-radius:22px;width:100%;max-width:700px;
+.score-modal{background:var(--card-bg);border-radius:22px;width:100%;max-width:760px;
   max-height:92vh;overflow-y:auto;box-shadow:0 32px 80px rgba(0,0,0,.32);position:relative;}
 .score-modal::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;
   background:linear-gradient(90deg,var(--crimson),var(--gold));border-radius:22px 22px 0 0;}
@@ -175,8 +175,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--ivory);color:var(--dark);
 .modal-sec-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.11em;
   color:var(--light);margin-bottom:12px;}
 .kra-table{width:100%;border-collapse:collapse;table-layout:fixed;}
-.kra-table th:first-child,.kra-table td:first-child{width:36%;}
-.kra-table th:last-child,.kra-table td:last-child{width:120px;}
+.kra-table th:first-child,.kra-table td:first-child{width:26%;}
+.kra-table th:last-child,.kra-table td:last-child{width:96px;}
 .kra-table th{text-align:left;font-size:9.5px;text-transform:uppercase;letter-spacing:.04em;
   color:var(--light);font-weight:700;padding:0 6px 8px 0;}
 .kra-table th:not(:first-child){text-align:right;}
@@ -296,8 +296,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--ivory);color:var(--dark);
           <tr>
             <th>KRA</th>
             <th title="What they committed last week">Committed</th>
+            <th>Planned</th>
             <th>Actual</th>
-            <th>Met?</th>
+            <th>Diff %</th>
             <th class="plan-th">Next Wk Plan</th>
           </tr>
         </thead>
@@ -319,12 +320,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--ivory);color:var(--dark);
 
 // LINK 1 — Directory Sheet, published as CSV.
 //          Columns: A=Name  B=Department  C=URL  D=Key
-const DIRECTORY_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQJVE4nivZRSL0GXzbpnQj8Jz3Bq-OKS_OahJGMEas9XAkG7ZvDVMvUylhO9VnWybMuxGWC2s-wj-l7/pub?gid=0&single=true&output=csv';
+const DIRECTORY_URL = 'PASTE_DIRECTORY_CSV_URL_HERE';
 
 // LINK 2 — Apps Script Web App URL (Deploy → New deployment → Web app).
 //          Leave as-is for now if the script isn't deployed yet;
 //          everything except the Submit button will still work.
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzBV12_kbv9DZI2M6iMMlvWw2dNrKBhFDbMGvpNaZpzIC4GnmPOkWOFzOZSLgS9anZcfA/exec';
+const SCRIPT_URL = 'PASTE_APPS_SCRIPT_WEB_APP_URL_HERE';
 
 // Must match the SECRET value inside your Apps Script.
 const SECRET = 'LoveHome@2026#MDPortal';
@@ -598,7 +599,7 @@ function parseEmployeeCSV(csv) {
       nextPlan: (row[8]||'').trim() };
   });
   const avgRow = lines[7] || [];
-  const avg = { planned: parseNum(avgRow[5]), actual: parseNum(avgRow[6]), pct: parseNum(avgRow[7]) };
+  const avg = { commitment: (avgRow[4]||'').trim(), planned: parseNum(avgRow[5]), actual: parseNum(avgRow[6]), pct: parseNum(avgRow[7]) };
   return { name, department, periodStart, periodEnd, kras, avg };
 }
 
@@ -670,13 +671,15 @@ function renderModal(){
     <tr>
       <td><div class="kra-name">${k.label}</div><div class="kra-kpi">${k.kpi}</div></td>
       <td class="num">${k.committed ? k.commitment : '<span class="no-commit">—</span>'}</td>
+      <td class="num">${k.planned}</td>
       <td class="num">${k.actual}</td>
-      <td class="num">${metBadge(k)}</td>
+      <td class="num ${pctCls(k.pct)}">${fmtPct(k.pct)}</td>
       <td class="num"><input class="plan-input" id="plan-${ki}" type="number" step="any"
            value="${k.nextPlan||''}" placeholder="—"></td>
     </tr>`).join('')+`
     <tr class="kra-total-row">
       <td>Average Scoring</td>
+      <td class="num">${r.avg.commitment!==undefined&&r.avg.commitment!==''?r.avg.commitment:'—'}</td>
       <td class="num">${r.avg.planned}</td>
       <td class="num">${r.avg.actual}</td>
       <td class="num ${pctCls(r.avg.pct)}">${fmtPct(r.avg.pct)}</td>
